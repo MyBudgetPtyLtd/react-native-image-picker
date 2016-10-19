@@ -19,13 +19,13 @@ import android.webkit.MimeTypeMap;
 import android.content.pm.PackageManager;
 import android.provider.OpenableColumns;
 
-import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
 
@@ -43,7 +43,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ImagePickerModule extends ReactContextBaseJavaModule implements ActivityEventListener {
+interface ActivityResultInterface {
+  void callback(int requestCode, int resultCode, Intent data);
+}
+
+public class ImagePickerModule extends ReactContextBaseJavaModule {
 
   static final int REQUEST_LAUNCH_IMAGE_CAPTURE = 1;
   static final int REQUEST_LAUNCH_IMAGE_LIBRARY = 2;
@@ -54,6 +58,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
 
 
   private final ReactApplicationContext mReactContext;
+  private ImagePickerActivityEventListener mActivityEventListener;
 
   private Uri mCameraCaptureURI;
   private Uri mCropImagedUri;
@@ -77,9 +82,15 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
   public ImagePickerModule(ReactApplicationContext reactContext) {
     super(reactContext);
 
-    reactContext.addActivityEventListener(this);
-
     mReactContext = reactContext;
+
+    mActivityEventListener = new ImagePickerActivityEventListener(reactContext, new ActivityResultInterface() {
+      @Override
+      public void callback(int requestCode, int resultCode, Intent data) {
+        onActivityResult(requestCode, resultCode, data);
+      }
+    });
+
   }
 
   @Override
@@ -287,7 +298,6 @@ public class ImagePickerModule extends ReactContextBaseJavaModule implements Act
     }
   }
 
-  @Override
   public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
     //robustness code
     if (mCallback == null || (mCameraCaptureURI == null && requestCode == REQUEST_LAUNCH_IMAGE_CAPTURE)
