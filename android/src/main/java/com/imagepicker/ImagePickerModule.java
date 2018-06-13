@@ -1,7 +1,7 @@
 package com.imagepicker;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.widget.ArrayAdapter;
@@ -100,6 +101,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void showImagePicker(final ReadableMap options, final Callback callback) {
+      StrictMode.VmPolicy.Builder builder2 = new StrictMode.VmPolicy.Builder();
+      StrictMode.setVmPolicy(builder2.build());
     Activity currentActivity = getCurrentActivity();
 
     if (currentActivity == null) {
@@ -150,6 +153,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
 
     ArrayAdapter<String> adapter = new ArrayAdapter<String>(currentActivity,
             android.R.layout.select_dialog_item, titles);
+
     AlertDialog.Builder builder = new AlertDialog.Builder(currentActivity);
     if (options.hasKey("title") && options.getString("title") != null && !options.getString("title").isEmpty()) {
       builder.setTitle(options.getString("title"));
@@ -198,6 +202,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
   // NOTE: Currently not reentrant / doesn't support concurrent requests
   @ReactMethod
   public void launchCamera(final ReadableMap options, final Callback callback) {
+      StrictMode.VmPolicy.Builder builder2 = new StrictMode.VmPolicy.Builder();
+      StrictMode.setVmPolicy(builder2.build());
     int requestCode;
     Intent cameraIntent;
     response = Arguments.createMap();
